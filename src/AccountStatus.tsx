@@ -1,11 +1,12 @@
 import { formatUnits } from "viem";
 import { useAccount, useBalance } from "wagmi";
+import { USDC_ADDRESS } from "./constants";
 
 function AccountStatus() {
     const account = useAccount();
     const { data, isLoading, isError, isSuccess } = useBalance({
         address: account.address!,
-        token: "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B"
+        token: USDC_ADDRESS
     }) ;
     return (<>
         <p>

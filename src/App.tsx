@@ -1,29 +1,14 @@
 import { useEffect } from 'react'
-import { useConnect, injected, useWriteContract, useAccount } from 'wagmi'
+import { useConnect, injected, useAccount } from 'wagmi'
 import { AccountStatus } from './AccountStatus.tsx'
-import { erc20Abi } from 'viem';
+import { MainPanel } from './MainPanel';
 
 function App() {
   const account = useAccount();
   const { connect } = useConnect();
-  const { writeContract } = useWriteContract();
   useEffect(() => {
     connect({ connector: injected() });
   }, []);
-
-  function sendUSDC() {
-    writeContract({
-      abi: erc20Abi,
-      address: "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B",
-      functionName: "transfer",
-      args: [
-        account.address!,
-        1000000n
-      ],
-      // feeCurrency: "0x2F25deB3848C207fc8E0c34035B3Ba7fC157602B",
-      // type: 'cip64'
-    })
-  }
 
   return (
     <>
@@ -40,8 +25,7 @@ function App() {
         }>LottoUSD</h1>
         <AccountStatus></AccountStatus>
       </header>
-      <button onClick={() => sendUSDC()}>send USDC</button>
-      <p>{}</p>
+      {account.isConnected && (<MainPanel></MainPanel>)}
     </>
   )
 }

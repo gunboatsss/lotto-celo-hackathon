@@ -1,0 +1,110 @@
+import { erc20Abi, formatUnits, parseUnits } from 'viem';
+import { LOTTERY_ADDRESS, USDC_ADDRESS } from './constants';
+import { useReadLotteryCurrentLotteryEpoch, useReadLotteryEpochDuration, useReadLotteryGetRewards, useReadLotteryGetTicketCount, useReadLotteryLotteryEpochStart, useWriteLotteryCloseEpochAndStartRng, useWriteLotteryFinishRng, useWriteLotteryPurchaseTicket } from './generated';
+import { useAccount, useWriteContract } from 'wagmi';
+import { useState, useEffect } from 'react';
+function MainPanel() {
+    const account = useAccount();
+    const [timeLeft, setTimeLeft] = useState<number>(0);
+
+    const formatTime = (milliseconds: number) => {
+        const totalSeconds = Math.floor(milliseconds / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor(totalSeconds % 3600 / 60);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return `${days}:${hours.toString().padStart(2, '0')}:${minutes
+            .toString()
+            .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+const { data: currentLotteryEpoch, isLoading: loading2, isSuccess: success2 } = useReadLotteryCurrentLotteryEpoch({
+    address: LOTTERY_ADDRESS
+});
+
+const { data: ticketBought, isLoading, isSuccess, isError } = useReadLotteryGetTicketCount({
+    address: LOTTERY_ADDRESS,
+    args: [currentLotteryEpoch!, account.address!]
+})
+
+const { data: currentReward, isLoading: isLoadingReward, isSuccess: successReward } = useReadLotteryGetRewards({
+    address: LOTTERY_ADDRESS,
+    args: [currentLotteryEpoch!]
+});
+
+const { data: epochStartTime, isLoading: loading3, isSuccess: success3 } = useReadLotteryLotteryEpochStart({
+    address: LOTTERY_ADDRESS,
+});
+
+const { data: epochDuration, isLoading: loading4, isSuccess: success4 } = useReadLotteryEpochDuration({
+    address: LOTTERY_ADDRESS,
+})
+
+const { writeContract: closeEpoch } = useWriteLotteryCloseEpochAndStartRng({
+});
+
+const { writeContract: distributeReward } = useWriteLotteryFinishRng({});
+
+const { writeContract } = useWriteContract();
+
+const { writeContract: buyTicket, isError: buyError, error } = useWriteLotteryPurchaseTicket({});
+
+useEffect(() => {
+    const calculateTimeLeft = () => {
+        const now = Date.now();
+        const endTime = Number(epochStartTime! + epochDuration!) * 1000;
+        const remaining = Math.max(0, endTime - now);
+        setTimeLeft(remaining);
+    };
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(interval);
+}, [epochStartTime, epochDuration]);
+
+console.log("Current Lottery Epoch: ", currentLotteryEpoch);
+console.log("Ticket Bought: ", ticketBought);
+
+return (
+    <>
+        {loading2 && <p>Loading...</p>}
+        {success2 && <p>Current Lottery Epoch: {currentLotteryEpoch.toString()}</p>}
+        {isLoadingReward && <p>Loading Reward...</p>}
+        {successReward && <p>Current Reward: {formatUnits(currentReward, 6)}</p>}
+        {success3 && <p>Epoch start time {epochStartTime.toString()}</p>}
+        {success3 && success4 && <p>Epoch Start Time: {(new Date(Number(epochStartTime * 1000n))).toDateString()}</p>}
+        {success3 && success4 && <p>Time Left: {formatTime(timeLeft)}</p>}
+        <p>Ticket Bought: {(isLoading && "Loading")}{(isSuccess && ticketBought.toString())}{isError && '0'}</p>
+        <label htmlFor='ticket'>Ticket Amount</label>
+        <input type='number' id='ticket'></input>
+        <button onClick={() => {
+            let amountToApprove = parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0) * 1000000n;
+            writeContract({
+                address: USDC_ADDRESS,
+                abi: erc20Abi,
+                functionName: 'approve',
+                args: [LOTTERY_ADDRESS, amountToApprove],
+            })
+        }}>Approve</button>
+        <button onClick={() => {
+            buyTicket({
+                address: LOTTERY_ADDRESS,
+                args: [parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0)],
+            })
+        }}>Buy Ticket</button>
+        {(buyError && <p>{error?.message}</p>)}
+        <button onClick={() => {
+            closeEpoch({
+                address: LOTTERY_ADDRESS
+            })
+        }}>Close Epoch</button>
+        <button onClick={() => {
+            distributeReward({
+                address: LOTTERY_ADDRESS,
+            })
+        }}>Distribute Reward</button>
+    </>
+)
+}
+
+export { MainPanel };
