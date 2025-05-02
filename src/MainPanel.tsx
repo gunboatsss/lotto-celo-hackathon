@@ -1,6 +1,6 @@
 import { erc20Abi, formatUnits, parseUnits } from 'viem';
 import { LOTTERY_ADDRESS, USDC_ADDRESS } from './constants';
-import { useReadLotteryCurrentLotteryEpoch, useReadLotteryEpochDuration, useReadLotteryGetRewards, useReadLotteryGetTicketCount, useReadLotteryLotteryEpochStart, useWriteLotteryCloseEpochAndStartRng, useWriteLotteryFinishRng, useWriteLotteryPurchaseTicket } from './generated';
+import { lotteryAbi, useReadLotteryCurrentLotteryEpoch, useReadLotteryCurrentRebateEpoch, useReadLotteryEpochDuration, useReadLotteryGetRebate, useReadLotteryGetRewards, useReadLotteryGetTicketCount, useReadLotteryLotteryEpochStart, useWriteLotteryCloseEpochAndStartRng, useWriteLotteryFinishRng, useWriteLotteryPurchaseTicket } from './generated';
 import { useAccount, useWriteContract } from 'wagmi';
 import { useState, useEffect } from 'react';
 function MainPanel() {
@@ -24,12 +24,18 @@ const { data: currentLotteryEpoch, isLoading: loading2, isSuccess: success2 } = 
 
 const { data: ticketBought, isLoading, isSuccess, isError } = useReadLotteryGetTicketCount({
     address: LOTTERY_ADDRESS,
-    args: [currentLotteryEpoch!, account.address!]
+    args: [currentLotteryEpoch!, account.address!],
+    query: {
+        enabled: !!account.address
+    }
 })
 
 const { data: currentReward, isLoading: isLoadingReward, isSuccess: successReward } = useReadLotteryGetRewards({
     address: LOTTERY_ADDRESS,
-    args: [currentLotteryEpoch!]
+    args: [currentLotteryEpoch!],
+    query: {
+        enabled: !!currentLotteryEpoch
+    }
 });
 
 const { data: epochStartTime, isLoading: loading3, isSuccess: success3 } = useReadLotteryLotteryEpochStart({
@@ -38,8 +44,28 @@ const { data: epochStartTime, isLoading: loading3, isSuccess: success3 } = useRe
 
 const { data: epochDuration, isLoading: loading4, isSuccess: success4 } = useReadLotteryEpochDuration({
     address: LOTTERY_ADDRESS,
-})
+});
 
+const { data: currentRebateEpoch, isSuccess: success7 } = useReadLotteryCurrentRebateEpoch({
+    address: LOTTERY_ADDRESS
+});
+
+const { data: currentRebate, isSuccess: success5 } = useReadLotteryGetRebate({
+    address: LOTTERY_ADDRESS,
+    args: [currentRebateEpoch!, account.address!],
+    query: {
+        enabled: !!currentRebateEpoch
+    }
+});
+
+
+const { data: previousRebate, isSuccess: success6 } = useReadLotteryGetRebate({
+    address: LOTTERY_ADDRESS,
+    args: [currentRebateEpoch! - 1n, account.address!],
+    query: {
+        enabled: !!currentRebateEpoch && !!account.address && currentRebateEpoch! > 0n
+    }
+});
 const { writeContract: closeEpoch } = useWriteLotteryCloseEpochAndStartRng({
 });
 
@@ -103,6 +129,21 @@ return (
                 address: LOTTERY_ADDRESS,
             })
         }}>Distribute Reward</button>
+        <p>Current Rebate: {success5 && formatUnits(currentRebate, 6)}</p>
+        {(success6 && currentRebateEpoch! > 0n) && <p>Previous Rebate: {formatUnits(previousRebate, 6)}</p>}
+        <button onClick={
+            () => {
+                writeContract({
+                    address: LOTTERY_ADDRESS,
+                    abi: lotteryAbi,
+                    functionName: 'claimRebate',
+                    args: [currentRebateEpoch! - 1n],
+                })
+            }
+        }
+        disabled={
+            !!currentRebateEpoch && currentRebateEpoch! >= 1n
+        }>Claim Rebate</button>
     </>
 )
 }
