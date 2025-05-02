@@ -46,7 +46,7 @@ const { data: epochDuration, isSuccess: success4 } = useReadLotteryEpochDuration
     address: LOTTERY_ADDRESS,
 });
 
-const { data: currentRebateEpoch, isSuccess: success7 } = useReadLotteryCurrentRebateEpoch({
+const { data: currentRebateEpoch } = useReadLotteryCurrentRebateEpoch({
     address: LOTTERY_ADDRESS
 });
 
