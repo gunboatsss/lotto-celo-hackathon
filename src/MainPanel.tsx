@@ -38,11 +38,11 @@ const { data: currentReward, isLoading: isLoadingReward, isSuccess: successRewar
     }
 });
 
-const { data: epochStartTime, isLoading: loading3, isSuccess: success3 } = useReadLotteryLotteryEpochStart({
+const { data: epochStartTime, isSuccess: success3 } = useReadLotteryLotteryEpochStart({
     address: LOTTERY_ADDRESS,
 });
 
-const { data: epochDuration, isLoading: loading4, isSuccess: success4 } = useReadLotteryEpochDuration({
+const { data: epochDuration, isSuccess: success4 } = useReadLotteryEpochDuration({
     address: LOTTERY_ADDRESS,
 });
 
@@ -50,16 +50,15 @@ const { data: currentRebateEpoch, isSuccess: success7 } = useReadLotteryCurrentR
     address: LOTTERY_ADDRESS
 });
 
-const { data: currentRebate, isSuccess: success5 } = useReadLotteryGetRebate({
+const { data: currentRebate, isSuccess: success_currentRebate } = useReadLotteryGetRebate({
     address: LOTTERY_ADDRESS,
     args: [currentRebateEpoch!, account.address!],
     query: {
-        enabled: !!currentRebateEpoch
+        enabled: !!currentRebateEpoch && !!account.address
     }
 });
 
-
-const { data: previousRebate, isSuccess: success6 } = useReadLotteryGetRebate({
+const { data: previousRebate, isSuccess: success_previousRebate } = useReadLotteryGetRebate({
     address: LOTTERY_ADDRESS,
     args: [currentRebateEpoch! - 1n, account.address!],
     query: {
@@ -129,8 +128,8 @@ return (
                 address: LOTTERY_ADDRESS,
             })
         }}>Distribute Reward</button>
-        <p>Current Rebate: {success5 && formatUnits(currentRebate, 6)}</p>
-        {(success6 && currentRebateEpoch! > 0n) && <p>Previous Rebate: {formatUnits(previousRebate, 6)}</p>}
+        <p>Current Rebate: {success_currentRebate && formatUnits(currentRebate, 6)}</p>
+        {(success_previousRebate && currentRebateEpoch! > 0n) && <p>Previous Rebate: {formatUnits(previousRebate, 6)}</p>}
         <button onClick={
             () => {
                 writeContract({

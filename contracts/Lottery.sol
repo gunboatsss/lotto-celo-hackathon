@@ -1,4 +1,4 @@
-//SPDX-Liscense-Identifier: MIT
+//SPDX-License-Identifier: MIT
 pragma solidity 0.8.29;
 
 import {EnumerableMapLib} from "solady/utils/EnumerableMapLib.sol";
