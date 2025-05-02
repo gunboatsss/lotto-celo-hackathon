@@ -128,7 +128,7 @@ return (
                 address: LOTTERY_ADDRESS,
             })
         }}>Distribute Reward</button>
-        <p>Current Rebate: {success_currentRebate && formatUnits(currentRebate, 6)}</p>
+        {success_currentRebate && <p>Current Rebate: {formatUnits(currentRebate, 6)}</p>}
         {(success_previousRebate && currentRebateEpoch! > 0n) && <p>Previous Rebate: {formatUnits(previousRebate, 6)}</p>}
         <button onClick={
             () => {
