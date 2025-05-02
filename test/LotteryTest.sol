@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.29;
+
 import "forge-std/Test.sol";
 
 import {Lottery} from "../contracts/Lottery.sol";
@@ -13,9 +14,11 @@ contract FakeUSDC is ERC20 {
     function name() public pure override returns (string memory) {
         return "Fake USDC";
     }
+
     function symbol() public pure override returns (string memory) {
         return "FUSDC";
     }
+
     function decimals() public pure override returns (uint8) {
         return 6;
     }
@@ -31,13 +34,7 @@ contract LotteryTest is Test {
     function setUp() public {
         skip(1 days);
         usdc = new FakeUSDC();
-        lottery = new Lottery(
-            address(usdc),
-            1e6,
-            7 days,
-            30 days,
-            100
-        );
+        lottery = new Lottery(address(usdc), 1e6, 7 days, 30 days, 100);
     }
 
     function testInitialValues() public {

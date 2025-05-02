@@ -9,13 +9,7 @@ address constant USDC_ON_CELO_TESTNET = 0x2F25deB3848C207fc8E0c34035B3Ba7fC15760
 contract DeployLotteryScript is Script {
     function run() external {
         vm.startBroadcast();
-        Lottery lottery = new Lottery(
-            USDC_ON_CELO_TESTNET,
-            1e6,
-            7 days,
-            30 days,
-            100
-        );
+        Lottery lottery = new Lottery(USDC_ON_CELO_TESTNET, 1e6, 7 days, 30 days, 100);
         console.log("Lottery deployed at:", address(lottery));
         vm.stopBroadcast();
     }
