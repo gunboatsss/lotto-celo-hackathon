@@ -23,3 +23,12 @@
 p {
   margin: 0;
 }
+
+button {
+  min-height: 40px;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  padding: 1;
+}
