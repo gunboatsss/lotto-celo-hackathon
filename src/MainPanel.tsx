@@ -103,12 +103,13 @@ function MainPanel() {
                 {loading2 && <p>Loading...</p>}
                 {isLoadingReward && <p>Loading Reward...</p>}
                 {isErrorReward && <p>{errorReward?.message}</p>}
-                {successReward && <p>Current Reward: {formatUnits(currentReward, 6)}</p>}
+                {successReward && <p>Current Reward: {formatUnits(currentReward, 6)} USDC</p>}
                 {success3 && success4 && <p>Epoch Start Time: {(new Date(Number(epochStartTime * 1000n))).toDateString()}</p>}
                 {success3 && success4 && <p>Time Left: {formatTime(timeLeft)}</p>}
                 <p>Ticket Bought: {(isLoading && "Loading")}{(isSuccess && ticketBought.toString())}{isError && '0'}</p>
                 <label htmlFor='ticket'>Ticket Amount</label>
-                <input type='number' id='ticket'></input>
+                <div style={{ display: 'flex', gap: '4px', margin: '4px', height: '40px', justifyContent: 'space-between'}}>
+                <input type='number' id='ticket' style={{flex: 1}}></input>
                 <button onClick={() => {
                     let amountToApprove = parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0) * 1000000n;
                     writeContract({
@@ -126,6 +127,7 @@ function MainPanel() {
                         args: [parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0)],
                     })
                 }}>Buy Ticket</button>
+                </div>
                 {status == 'success' && <p id='status'>Approved</p>}
                 {buyLotteryStatus == 'success' && <p>Ticket Bought</p>}
                 {(buyError && <p>{error?.message}</p>)}
