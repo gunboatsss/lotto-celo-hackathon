@@ -108,39 +108,50 @@ function MainPanel() {
                 {success3 && success4 && <p>Time Left: {formatTime(timeLeft)}</p>}
                 <p>Ticket Bought: {(isLoading && "Loading")}{(isSuccess && ticketBought.toString())}{isError && '0'}</p>
                 <label htmlFor='ticket'>Ticket Amount</label>
-                <div style={{ display: 'flex', gap: '4px', margin: '4px', height: '40px', justifyContent: 'space-between'}}>
-                <input type='number' id='ticket' style={{flex: 1}}></input>
-                <button onClick={() => {
-                    let amountToApprove = parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0) * 1000000n;
-                    writeContract({
-                        address: USDC_ADDRESS,
-                        abi: erc20Abi,
-                        functionName: 'approve',
-                        args: [LOTTERY_ADDRESS, amountToApprove],   
-                    })
-                }}>Approve</button>
-                <button onClick={() => {
-                    const p = document.getElementById('x') as HTMLParagraphElement;
-                    p?.style.setProperty('display', 'none');
-                    buyTicket({
-                        address: LOTTERY_ADDRESS,
-                        args: [parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0)],
-                    })
-                }}>Buy Ticket</button>
+                <div style={{ display: 'flex', gap: '4px', margin: '4px', height: '40px', justifyContent: 'space-between' }}>
+                    <input type='number' id='ticket' style={{ flex: 1 }}></input>
+                    <button style={{
+                        backgroundColor: 'rgb(255, 255, 255)',
+                        color: 'rgb(0, 0, 0)',
+                    }} onClick={() => {
+                        let amountToApprove = parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0) * 1000000n;
+                        writeContract({
+                            address: USDC_ADDRESS,
+                            abi: erc20Abi,
+                            functionName: 'approve',
+                            args: [LOTTERY_ADDRESS, amountToApprove],
+                        })
+                    }}>Approve</button>
+                    <button style={{
+                        backgroundColor: 'rgb(152, 251, 152)',
+                        color: 'rgb(0, 0, 0)',
+                    }} onClick={() => {
+                        const p = document.getElementById('x') as HTMLParagraphElement;
+                        p?.style.setProperty('display', 'none');
+                        buyTicket({
+                            address: LOTTERY_ADDRESS,
+                            args: [parseUnits((document.getElementById('ticket') as HTMLInputElement)?.value, 0)],
+                        })
+                    }}>Buy Ticket</button>
                 </div>
                 {status == 'success' && <p id='status'>Approved</p>}
                 {buyLotteryStatus == 'success' && <p>Ticket Bought</p>}
                 {(buyError && <p>{error?.message}</p>)}
-                <button onClick={() => {
-                    closeEpoch({
-                        address: LOTTERY_ADDRESS
-                    })
-                }}>Close Epoch</button>
-                <button onClick={() => {
-                    distributeReward({
-                        address: LOTTERY_ADDRESS,
-                    })
-                }}>Distribute Reward</button>
+                <details style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <summary>Admin</summary>
+                    <button style={{
+                        margin: '4px',
+                    }} onClick={() => {
+                        closeEpoch({
+                            address: LOTTERY_ADDRESS
+                        })
+                    }}>Close Epoch</button>
+                    <button onClick={() => {
+                        distributeReward({
+                            address: LOTTERY_ADDRESS,
+                        })
+                    }}>Distribute Reward</button>
+                </details>
                 {success_currentRebate && (<p>Current Rebate: {formatUnits(currentRebate, 6)}</p>)}
                 {(success2 && currentRebateEpoch! === 0n) && (
                     <p>Rebate claim coming soon</p>
